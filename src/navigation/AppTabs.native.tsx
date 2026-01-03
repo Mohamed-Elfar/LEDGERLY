@@ -18,6 +18,7 @@ import { ProfileScreen } from "../screens/ProfileScreen";
 import { TeamScreen } from "../screens/TeamScreen";
 import { HistoryScreen } from "../screens/HistoryScreen";
 import { UserProfile } from "../types/models";
+import { formatOrgName } from "../utils/org";
 
 const Tab = createBottomTabNavigator();
 const { width } = Dimensions.get("window");
@@ -34,6 +35,26 @@ type Props = {
   handleSignOut: () => Promise<void>;
 };
 
+const headerBackground = () => (
+  <View style={styles.headerBackground}>
+    <View style={styles.headerFill} />
+  </View>
+);
+
+const headerBaseOptions = {
+  headerShown: true,
+  headerTitleAlign: "center",
+  headerStyle: {
+    backgroundColor: "transparent",
+    borderBottomWidth: 0,
+    elevation: 0,
+    shadowOpacity: 0,
+  },
+  headerTitleStyle: { color: "#f2f6fc", fontWeight: "700" },
+  headerTintColor: "#9fc5ff",
+  headerBackground,
+} as const;
+
 export function AppTabNavigator({
   profile,
   profileLoading,
@@ -41,33 +62,19 @@ export function AppTabNavigator({
   loadProfile,
   handleSignOut,
 }: Props) {
+  const displayOrgName = formatOrgName(profile.org_name);
+
   return (
     <Tab.Navigator
       tabBar={(props) => <CurvedTabBar {...props} />}
-      screenOptions={{
-        headerShown: true,
-        headerTitleAlign: "center",
-        headerStyle: {
-          backgroundColor: "transparent",
-          borderBottomWidth: 0,
-          elevation: 0,
-          shadowOpacity: 0,
-        },
-        headerTitleStyle: { color: "#f2f6fc", fontWeight: "700" },
-        headerTintColor: "#9fc5ff",
-        headerBackground: () => (
-          <View style={styles.headerBackground}>
-            <View style={styles.headerFill} />
-          </View>
-        ),
-      }}
+      screenOptions={headerBaseOptions}
     >
       <Tab.Screen
         name="CustomersTab"
         component={CustomersStackNavigator}
         initialParams={{ profile }}
         options={{
-          title: profile.org_name || "Organization",
+          title: displayOrgName,
           tabBarLabel: "Customers",
           tabBarIcon: ({ color, focused }) => (
             <MaterialCommunityIcons
@@ -83,7 +90,7 @@ export function AppTabNavigator({
       <Tab.Screen
         name="ProfileTab"
         options={{
-          title: profile.org_name || "Organization",
+          title: displayOrgName,
           tabBarLabel: "Profile",
           tabBarIcon: ({ color, focused }) => (
             <MaterialCommunityIcons
@@ -109,7 +116,7 @@ export function AppTabNavigator({
         <Tab.Screen
           name="TeamTab"
           options={{
-            title: profile.org_name || "Organization",
+            title: displayOrgName,
             tabBarLabel: "Team",
             tabBarIcon: ({ color, focused }) => (
               <MaterialCommunityIcons
@@ -128,7 +135,7 @@ export function AppTabNavigator({
         <Tab.Screen
           name="HistoryTab"
           options={{
-            title: profile.org_name || "Organization",
+            title: displayOrgName,
             tabBarLabel: "History",
             tabBarIcon: ({ color, focused }) => (
               <MaterialCommunityIcons

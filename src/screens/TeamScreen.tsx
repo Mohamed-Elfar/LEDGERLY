@@ -12,6 +12,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { supabase } from "../../supabaseClient";
 import { UserProfile } from "../types/models";
+import { formatOrgName } from "../utils/org";
 
 type Props = {
   profile: UserProfile;
@@ -26,6 +27,7 @@ type TeamMember = {
 };
 
 export function TeamScreen({ profile }: Props) {
+  const displayOrgName = formatOrgName(profile.org_name);
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -81,7 +83,7 @@ export function TeamScreen({ profile }: Props) {
               <Text style={styles.roleText}>{item.role}</Text>
             </View>
             <Text style={styles.memberOrg}>
-              {item.org_name || profile.org_name || ""}
+              {formatOrgName(item.org_name) || displayOrgName}
             </Text>
           </View>
         </View>

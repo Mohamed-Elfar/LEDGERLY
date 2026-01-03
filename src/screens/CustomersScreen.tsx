@@ -9,6 +9,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Modal,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -183,7 +184,12 @@ export function CustomersScreen({ navigation, profile }: Props) {
         <Text style={styles.buttonText}>Add new customer</Text>
       </TouchableOpacity>
 
-      {showAddModal && (
+      <Modal
+        visible={showAddModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowAddModal(false)}
+      >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Add new customer</Text>
@@ -287,7 +293,7 @@ export function CustomersScreen({ navigation, profile }: Props) {
             </TouchableOpacity>
           </View>
         </View>
-      )}
+      </Modal>
 
       <FlatList
         data={customers}
@@ -464,7 +470,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: "rgba(0, 0, 0, 0.7)",
     justifyContent: "flex-end",
-    zIndex: 9999,
+    paddingBottom: 24,
   },
   modalContent: {
     backgroundColor: "#0f2a40",

@@ -167,14 +167,7 @@ export default function App() {
           handleSignOut={handleSignOut}
         />
       ) : (
-        <AuthStack.Navigator screenOptions={{ headerShown: false }}>
-          <AuthStack.Screen name="SignIn" component={SignInScreen} />
-          <AuthStack.Screen name="SignUp" component={SignUpScreen} />
-          <AuthStack.Screen
-            name="ConfirmEmail"
-            component={EmailConfirmScreen}
-          />
-        </AuthStack.Navigator>
+        <AuthNavigator />
       )}
 
       {statusMessage && (

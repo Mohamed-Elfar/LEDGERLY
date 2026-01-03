@@ -8,12 +8,14 @@ import {
   TouchableOpacity,
   View,
   ScrollView,
+  Modal,
 } from "react-native";
 import { Controller, useForm } from "react-hook-form";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { supabase } from "../../supabaseClient";
 import { UserProfile } from "../types/models";
+import { formatOrgName } from "../utils/org";
 
 type Props = {
   profile: UserProfile;
@@ -37,6 +39,7 @@ export function ProfileScreen({
   onRefresh,
   onSignOut,
 }: Props) {
+  const displayOrgName = formatOrgName(profile.org_name);
   const [showEditModal, setShowEditModal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -165,9 +168,7 @@ export function ProfileScreen({
               color="#fff"
               style={styles.badgeIcon}
             />
-            <Text style={styles.badgeText}>
-              {profile.org_name || "Organization"}
-            </Text>
+            <Text style={styles.badgeText}>{displayOrgName}</Text>
           </View>
           <View style={isAdmin ? styles.pillBadgeAdmin : styles.pillBadgeStaff}>
             <MaterialCommunityIcons
@@ -243,7 +244,12 @@ export function ProfileScreen({
       </TouchableOpacity>
 
       {/* Edit Modal */}
-      {showEditModal && (
+      <Modal
+        visible={showEditModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowEditModal(false)}
+      >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Edit Profile</Text>
@@ -379,9 +385,14 @@ export function ProfileScreen({
             </TouchableOpacity>
           </View>
         </View>
-      )}
+      </Modal>
 
-      {showDeleteModal && (
+      <Modal
+        visible={showDeleteModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowDeleteModal(false)}
+      >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Delete Organization</Text>
@@ -439,7 +450,7 @@ export function ProfileScreen({
             </TouchableOpacity>
           </View>
         </View>
-      )}
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -585,7 +596,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: "rgba(0, 0, 0, 0.7)",
     justifyContent: "flex-end",
-    zIndex: 9999,
+    paddingBottom: 24,
   },
   modalContent: {
     backgroundColor: "#0f2a40",
