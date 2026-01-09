@@ -28,7 +28,10 @@ export function CustomersStackNavigator({ route }: Props) {
   return (
     <AppStack.Navigator
       screenOptions={{
-        ...getCommonHeaderOptions({ orgId: profile.org_id }),
+        ...getCommonHeaderOptions({
+          orgId: profile.org_id,
+          userRole: profile.role,
+        }),
         contentStyle: { paddingTop: 16 },
       }}
     >

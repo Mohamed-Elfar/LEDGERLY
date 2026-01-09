@@ -48,7 +48,10 @@ export function AppTabNavigator({
   return (
     <Tab.Navigator
       tabBar={(props) => <CurvedTabBar {...props} />}
-      screenOptions={getCommonHeaderOptions({ orgId: profile.org_id })}
+      screenOptions={getCommonHeaderOptions({
+        orgId: profile.org_id,
+        userRole: profile.role,
+      })}
     >
       <Tab.Screen
         name="CustomersTab"

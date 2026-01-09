@@ -1,5 +1,6 @@
 import { View, StyleSheet } from "react-native";
 import { NotificationsBell } from "../components/NotificationsBell";
+import { Role } from "../types/models";
 
 const headerBackground = () => {
   return (
@@ -9,7 +10,10 @@ const headerBackground = () => {
   );
 };
 
-export const getCommonHeaderOptions = (params?: { orgId?: string }) => ({
+export const getCommonHeaderOptions = (params?: {
+  orgId?: string;
+  userRole?: Role;
+}) => ({
   headerShown: true,
   headerTitleAlign: "center" as const,
   headerStyle: {
@@ -21,9 +25,10 @@ export const getCommonHeaderOptions = (params?: { orgId?: string }) => ({
   headerTitleStyle: { color: "#f2f6fc", fontWeight: "700" as const },
   headerTintColor: "#9fc5ff",
   headerBackground,
-  headerRight: params?.orgId
-    ? () => <NotificationsBell orgId={params.orgId!} />
-    : undefined,
+  headerRight:
+    params?.orgId && params?.userRole === "ADMIN"
+      ? () => <NotificationsBell orgId={params.orgId!} />
+      : undefined,
 });
 
 const styles = StyleSheet.create({

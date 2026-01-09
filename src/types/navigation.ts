@@ -5,8 +5,7 @@ export type AuthStackParamList = {
   SignUp: undefined;
   ConfirmEmail: { email: string; orgId?: string };
   ForgotPassword: undefined;
-  VerifyOTP: { email: string };
-  ResetPassword: { email: string; otp: string };
+  ResetPassword: undefined;
 };
 
 export type AppStackParamList = {

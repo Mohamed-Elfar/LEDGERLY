@@ -8,12 +8,13 @@ import {
   TouchableOpacity,
   View,
   ScrollView,
+  Alert,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Controller, useForm } from "react-hook-form";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
-import { sendPasswordResetOTP } from "../services/auth";
+import { sendPasswordResetEmail } from "../services/auth";
 import { AuthStackParamList } from "../types/navigation";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "ForgotPassword">;
@@ -40,11 +41,17 @@ export function ForgotPasswordScreen({ navigation }: Props) {
     setError(null);
     try {
       const email = values.email.trim().toLowerCase();
-      await sendPasswordResetOTP(email);
-      // Navigate to OTP verification screen
-      navigation.navigate("VerifyOTP", { email });
+      await sendPasswordResetEmail(email);
+      Alert.alert(
+        "Check your email",
+        "We sent a password reset link to " +
+          email +
+          ". Click it to reset your password."
+      );
+      navigation.goBack();
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to send OTP";
+      const message =
+        err instanceof Error ? err.message : "Failed to send link";
       setError(message);
     } finally {
       setSubmitting(false);

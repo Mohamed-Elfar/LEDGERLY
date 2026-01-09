@@ -24,6 +24,7 @@ import { AuthNavigator } from "./src/navigation/AuthNavigator";
 import { getProfile } from "./src/services/auth";
 import { UserProfile } from "./src/types/models";
 import { supabase } from "./supabaseClient";
+import { PasswordResetModal } from "./src/components/PasswordResetModal";
 
 const navigationTheme = {
   ...DefaultTheme,
@@ -72,22 +73,19 @@ export default function App() {
   const [signingOut, setSigningOut] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isPasswordReset, setIsPasswordReset] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   useEffect(() => {
     // Check for initial deep link URL
     Linking.getInitialURL().then((url) => {
-      console.log("[Initial URL]", url);
-      if (url?.includes("reset-password") || url?.includes("type=recovery")) {
-        console.log("[Deep Link] Password reset detected from URL");
+      if (url?.includes("type=recovery")) {
         setIsPasswordReset(true);
       }
     });
 
     // Listen for URL changes
     const linkingSubscription = Linking.addEventListener("url", ({ url }) => {
-      console.log("[URL Event]", url);
-      if (url?.includes("reset-password") || url?.includes("type=recovery")) {
-        console.log("[Deep Link] Password reset detected");
+      if (url?.includes("type=recovery")) {
         setIsPasswordReset(true);
       }
     });
@@ -96,7 +94,6 @@ export default function App() {
       .getSession()
       .then(({ data }) => {
         setSession(data.session ?? null);
-        console.log("[Initial Session] User:", data.session?.user?.email);
       })
       .catch((err) => {
         const message = err instanceof Error ? err.message : "Auth failed";
@@ -105,27 +102,19 @@ export default function App() {
 
     const { data: listener } = supabase.auth.onAuthStateChange(
       (event, newSession) => {
-        console.log("[Auth Event]", event, "Session:", !!newSession);
         setSession(newSession);
         if (!newSession) {
           setProfile(null);
           setIsPasswordReset(false);
+          setShowPasswordModal(false);
         }
         // When user clicks password reset link, set flag to show reset screen
         if (event === "PASSWORD_RECOVERY") {
-          console.log("[Password Recovery Detected]");
           setIsPasswordReset(true);
         }
-        // For React Native, check if this is initial sign in after app launch
-        // If user has no profile yet and was just signed in, it might be from recovery
-        if (event === "SIGNED_IN" && !profile) {
-          // Check URL for recovery type
-          Linking.getInitialURL().then((url) => {
-            if (url?.includes("type=recovery")) {
-              console.log("[Recovery detected from initial URL on SIGNED_IN]");
-              setIsPasswordReset(true);
-            }
-          });
+        // After successfully updating password, clear the reset flag
+        if (event === "USER_UPDATED") {
+          setIsPasswordReset(false);
         }
       }
     );
@@ -146,9 +135,6 @@ export default function App() {
   const loadProfile = useCallback(async () => {
     if (!session) return;
 
-    console.log("[loadProfile] Session user:", session.user.email);
-    console.log("[loadProfile] isPasswordReset:", isPasswordReset);
-
     setProfileLoading(true);
     setStatusMessage(null);
     try {
@@ -166,10 +152,6 @@ export default function App() {
 
   useEffect(() => {
     if (session) {
-      console.log(
-        "[useEffect] Loading profile, isPasswordReset:",
-        isPasswordReset
-      );
       if (!isPasswordReset) {
         loadProfile();
       }

@@ -31,13 +31,6 @@ export async function createJoinRequest(params: {
 }) {
   const { userId, email, username, orgId, orgName, role } = params;
 
-  console.log("[createJoinRequest] Creating with params:", {
-    userId,
-    email,
-    orgId,
-    orgName,
-  });
-
   const { data, error } = await supabase
     .from("join_requests")
     .upsert(
@@ -56,11 +49,9 @@ export async function createJoinRequest(params: {
     .single();
 
   if (error) {
-    console.error("[createJoinRequest] Error:", error);
     throw error;
   }
 
-  console.log("[createJoinRequest] Success:", data);
   return data as JoinRequest;
 }
 
@@ -75,11 +66,9 @@ export async function getOrgJoinRequests(orgId: string) {
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("[getOrgJoinRequests] Error:", error);
     throw error;
   }
 
-  console.log("[getOrgJoinRequests] Found", data?.length || 0, "requests");
   return (data as JoinRequest[]) || [];
 }
 

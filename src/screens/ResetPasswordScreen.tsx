@@ -14,7 +14,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Controller, useForm } from "react-hook-form";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
-import { resetPassword } from "../services/auth";
+import { supabase } from "../../supabaseClient";
 import { AuthStackParamList } from "../types/navigation";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "ResetPassword">;
@@ -24,8 +24,7 @@ type FormValues = {
   confirmPassword: string;
 };
 
-export function ResetPasswordScreen({ navigation, route }: Props) {
-  const { email, otp } = route.params;
+export function ResetPasswordScreen({ navigation }: Props) {
   const {
     control,
     handleSubmit,
@@ -48,18 +47,25 @@ export function ResetPasswordScreen({ navigation, route }: Props) {
     setSubmitting(true);
     setError(null);
     try {
-      await resetPassword(email, otp, values.password);
-      Alert.alert("Success", "Password reset successfully");
-      // Navigate to sign in
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "SignIn" }],
+      // Update password for the authenticated user
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: values.password,
       });
+
+      if (updateError) throw updateError;
+
+      setSubmitting(false);
+
+      // Show success alert - app will auto-redirect when isPasswordReset is cleared
+      Alert.alert("Success", "Your password has been changed successfully!", [
+        {
+          text: "OK",
+        },
+      ]);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to reset password";
       setError(message);
-    } finally {
       setSubmitting(false);
     }
   };

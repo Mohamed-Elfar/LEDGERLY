@@ -5,7 +5,6 @@ import { ForgotPasswordScreen } from "../screens/ForgotPasswordScreen";
 import { ResetPasswordScreen } from "../screens/ResetPasswordScreen";
 import { SignInScreen } from "../screens/SignInScreen";
 import { SignUpScreen } from "../screens/SignUpScreen";
-import { VerifyOTPScreen } from "../screens/VerifyOTPScreen";
 import { AuthStackParamList } from "../types/navigation";
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -34,7 +33,6 @@ export function AuthNavigator({ isPasswordReset }: Props) {
             name="ForgotPassword"
             component={ForgotPasswordScreen}
           />
-          <AuthStack.Screen name="VerifyOTP" component={VerifyOTPScreen} />
           <AuthStack.Screen
             name="ResetPassword"
             component={ResetPasswordScreen}

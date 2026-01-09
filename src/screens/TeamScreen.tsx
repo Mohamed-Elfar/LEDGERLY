@@ -65,19 +65,13 @@ export function TeamScreen({ profile }: Props) {
 
   const loadJoinRequests = useCallback(async () => {
     try {
-      console.log(
-        "[TeamScreen] Loading join requests for org:",
-        profile.org_id
-      );
       setRequestsLoading(true);
       setError(null);
       const pending = await getOrgJoinRequests(profile.org_id);
-      console.log("[TeamScreen] Loaded join requests:", pending);
       setJoinRequests(pending);
     } catch (err) {
       const errorMsg =
         err instanceof Error ? err.message : "Failed to load requests";
-      console.error("[TeamScreen] Error loading join requests:", err);
       setError(errorMsg);
       setJoinRequests([]);
     } finally {
@@ -87,7 +81,6 @@ export function TeamScreen({ profile }: Props) {
 
   useFocusEffect(
     useCallback(() => {
-      console.log("[TeamScreen] Tab focused - loading data");
       loadTeam().finally(() => setLoading(false));
       loadJoinRequests();
     }, [loadTeam, loadJoinRequests])
