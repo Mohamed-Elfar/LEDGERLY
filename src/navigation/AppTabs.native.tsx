@@ -19,6 +19,7 @@ import { TeamScreen } from "../screens/TeamScreen";
 import { HistoryScreen } from "../screens/HistoryScreen";
 import { UserProfile } from "../types/models";
 import { formatOrgName } from "../utils/org";
+import { getCommonHeaderOptions } from "../utils/commonHeader";
 
 const Tab = createBottomTabNavigator();
 const { width } = Dimensions.get("window");
@@ -35,26 +36,6 @@ type Props = {
   handleSignOut: () => Promise<void>;
 };
 
-const headerBackground = () => (
-  <View style={styles.headerBackground}>
-    <View style={styles.headerFill} />
-  </View>
-);
-
-const headerBaseOptions = {
-  headerShown: true,
-  headerTitleAlign: "center",
-  headerStyle: {
-    backgroundColor: "transparent",
-    borderBottomWidth: 0,
-    elevation: 0,
-    shadowOpacity: 0,
-  },
-  headerTitleStyle: { color: "#f2f6fc", fontWeight: "700" },
-  headerTintColor: "#9fc5ff",
-  headerBackground,
-} as const;
-
 export function AppTabNavigator({
   profile,
   profileLoading,
@@ -67,7 +48,7 @@ export function AppTabNavigator({
   return (
     <Tab.Navigator
       tabBar={(props) => <CurvedTabBar {...props} />}
-      screenOptions={headerBaseOptions}
+      screenOptions={getCommonHeaderOptions({ orgId: profile.org_id })}
     >
       <Tab.Screen
         name="CustomersTab"
@@ -246,7 +227,6 @@ function CurvedTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
               accessibilityRole="button"
               accessibilityState={isFocused ? { selected: true } : {}}
               accessibilityLabel={options.tabBarAccessibilityLabel}
-              testID={options.tabBarTestID}
               onPress={onPress}
               onLongPress={onLongPress}
               activeOpacity={0.82}
@@ -334,17 +314,5 @@ const styles = StyleSheet.create({
     height: 6,
     backgroundColor: "#2d8cff",
     borderRadius: 4,
-  },
-  headerBackground: {
-    flex: 1,
-    backgroundColor: "transparent",
-  },
-  headerFill: {
-    flex: 1,
-    backgroundColor: "#0f2a40",
-    borderBottomLeftRadius: 18,
-    borderBottomRightRadius: 18,
-    borderBottomWidth: 1,
-    borderColor: "#1c3a52",
   },
 });

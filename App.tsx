@@ -1,6 +1,10 @@
 ﻿import "react-native-gesture-handler";
 
-import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
+import {
+  NavigationContainer,
+  DefaultTheme,
+  LinkingOptions,
+} from "@react-navigation/native";
 import { Session } from "@supabase/supabase-js";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useState } from "react";
@@ -12,6 +16,7 @@ import {
   TouchableOpacity,
   View,
   Image,
+  Linking,
 } from "react-native";
 
 import { AppTabNavigator } from "./src/navigation/AppTabs";
@@ -32,6 +37,32 @@ const navigationTheme = {
   },
 };
 
+const linking: LinkingOptions<any> = {
+  prefixes: [
+    "tempapp://",
+    "https://tempapp.example.com",
+    "http://localhost:8081",
+    "exp://",
+  ],
+  config: {
+    screens: {
+      SignIn: {
+        path: "signin",
+        parse: {
+          type: (type: string) => {
+            if (type === "recovery") {
+              // This will be handled by the auth state change
+              return type;
+            }
+            return type;
+          },
+        },
+      },
+      SignUp: "signup",
+    },
+  },
+};
+
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -40,12 +71,32 @@ export default function App() {
   const [profileLoading, setProfileLoading] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [isPasswordReset, setIsPasswordReset] = useState(false);
 
   useEffect(() => {
+    // Check for initial deep link URL
+    Linking.getInitialURL().then((url) => {
+      console.log("[Initial URL]", url);
+      if (url?.includes("reset-password") || url?.includes("type=recovery")) {
+        console.log("[Deep Link] Password reset detected from URL");
+        setIsPasswordReset(true);
+      }
+    });
+
+    // Listen for URL changes
+    const linkingSubscription = Linking.addEventListener("url", ({ url }) => {
+      console.log("[URL Event]", url);
+      if (url?.includes("reset-password") || url?.includes("type=recovery")) {
+        console.log("[Deep Link] Password reset detected");
+        setIsPasswordReset(true);
+      }
+    });
+
     supabase.auth
       .getSession()
       .then(({ data }) => {
         setSession(data.session ?? null);
+        console.log("[Initial Session] User:", data.session?.user?.email);
       })
       .catch((err) => {
         const message = err instanceof Error ? err.message : "Auth failed";
@@ -53,10 +104,28 @@ export default function App() {
       });
 
     const { data: listener } = supabase.auth.onAuthStateChange(
-      (_, newSession) => {
+      (event, newSession) => {
+        console.log("[Auth Event]", event, "Session:", !!newSession);
         setSession(newSession);
         if (!newSession) {
           setProfile(null);
+          setIsPasswordReset(false);
+        }
+        // When user clicks password reset link, set flag to show reset screen
+        if (event === "PASSWORD_RECOVERY") {
+          console.log("[Password Recovery Detected]");
+          setIsPasswordReset(true);
+        }
+        // For React Native, check if this is initial sign in after app launch
+        // If user has no profile yet and was just signed in, it might be from recovery
+        if (event === "SIGNED_IN" && !profile) {
+          // Check URL for recovery type
+          Linking.getInitialURL().then((url) => {
+            if (url?.includes("type=recovery")) {
+              console.log("[Recovery detected from initial URL on SIGNED_IN]");
+              setIsPasswordReset(true);
+            }
+          });
         }
       }
     );
@@ -69,12 +138,17 @@ export default function App() {
 
     return () => {
       listener?.subscription.unsubscribe();
+      linkingSubscription.remove();
       clearTimeout(splashTimer);
     };
   }, []);
 
   const loadProfile = useCallback(async () => {
     if (!session) return;
+
+    console.log("[loadProfile] Session user:", session.user.email);
+    console.log("[loadProfile] isPasswordReset:", isPasswordReset);
+
     setProfileLoading(true);
     setStatusMessage(null);
     try {
@@ -92,12 +166,18 @@ export default function App() {
 
   useEffect(() => {
     if (session) {
-      loadProfile();
+      console.log(
+        "[useEffect] Loading profile, isPasswordReset:",
+        isPasswordReset
+      );
+      if (!isPasswordReset) {
+        loadProfile();
+      }
     } else {
       setProfile(null);
       setBootLoading(false);
     }
-  }, [session, loadProfile]);
+  }, [session, loadProfile, isPasswordReset]);
 
   const handleSignOut = useCallback(async () => {
     setSigningOut(true);
@@ -137,7 +217,7 @@ export default function App() {
     );
   }
 
-  if (session && !profile && !profileLoading) {
+  if (session && !profile && !profileLoading && !isPasswordReset) {
     return (
       <SafeAreaView style={styles.centered}>
         <StatusBar style="light" />
@@ -153,12 +233,42 @@ export default function App() {
     );
   }
 
-  const showApp = session && profile;
+  const isPending = profile?.status === "PENDING";
+  const isRejected = profile?.status === "REJECTED";
+  const showApp = session && profile && !isPending && !isRejected;
+
+  if (session && profile && (isPending || isRejected)) {
+    return (
+      <SafeAreaView style={styles.centered}>
+        <StatusBar style="light" />
+        <Text style={styles.centeredText}>
+          {isPending
+            ? "Waiting for admin approval"
+            : "Your request was rejected"}
+        </Text>
+        <Text style={styles.centerSubtext}>
+          {isPending
+            ? "An admin needs to approve your access to this organization."
+            : "Please contact your admin or try joining again."}
+        </Text>
+        <TouchableOpacity style={styles.button} onPress={loadProfile}>
+          <Text style={styles.buttonText}>Refresh</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.dangerButton} onPress={handleSignOut}>
+          <Text style={styles.buttonText}>Sign out</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
 
   return (
-    <NavigationContainer theme={navigationTheme}>
+    <NavigationContainer
+      theme={navigationTheme}
+      linking={linking}
+      fallback={<ActivityIndicator size="large" color="#2d8cff" />}
+    >
       <StatusBar style="light" />
-      {showApp ? (
+      {showApp && !isPasswordReset ? (
         <AppTabNavigator
           profile={profile}
           profileLoading={profileLoading}
@@ -167,7 +277,7 @@ export default function App() {
           handleSignOut={handleSignOut}
         />
       ) : (
-        <AuthNavigator />
+        <AuthNavigator isPasswordReset={isPasswordReset} />
       )}
 
       {statusMessage && (

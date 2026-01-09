@@ -1,11 +1,11 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { View, StyleSheet } from "react-native";
 
 import { CustomerDetailScreen } from "../screens/CustomerDetailScreen";
 import { CustomersScreen } from "../screens/CustomersScreen";
 import { AppStackParamList } from "../types/navigation";
 import { UserProfile } from "../types/models";
 import { formatOrgName } from "../utils/org";
+import { getCommonHeaderOptions } from "../utils/commonHeader";
 
 const AppStack = createNativeStackNavigator<AppStackParamList>();
 
@@ -25,28 +25,10 @@ export function CustomersStackNavigator({ route }: Props) {
 
   const displayOrgName = formatOrgName(profile.org_name);
 
-  const headerBackground = () => (
-    <View style={styles.headerBackground}>
-      <View style={styles.headerFill} />
-    </View>
-  );
-
-  const headerBaseOptions = {
-    headerTitleAlign: "center",
-    headerStyle: {
-      backgroundColor: "transparent",
-      borderBottomWidth: 0,
-      elevation: 0,
-      shadowOpacity: 0,
-    },
-    headerTitleStyle: { color: "#f2f6fc", fontWeight: "700" },
-    headerTintColor: "#9fc5ff",
-    headerBackground,
-  } as const;
-
   return (
     <AppStack.Navigator
       screenOptions={{
+        ...getCommonHeaderOptions({ orgId: profile.org_id }),
         contentStyle: { paddingTop: 16 },
       }}
     >
@@ -54,7 +36,6 @@ export function CustomersStackNavigator({ route }: Props) {
         name="Customers"
         options={{
           title: displayOrgName,
-          ...headerBaseOptions,
         }}
       >
         {(props) => <CustomersScreen {...props} profile={profile} />}
@@ -63,7 +44,6 @@ export function CustomersStackNavigator({ route }: Props) {
         name="CustomerDetail"
         options={{
           title: "Customer",
-          ...headerBaseOptions,
         }}
       >
         {(props) => <CustomerDetailScreen {...props} profile={profile} />}
@@ -71,18 +51,3 @@ export function CustomersStackNavigator({ route }: Props) {
     </AppStack.Navigator>
   );
 }
-
-const styles = StyleSheet.create({
-  headerBackground: {
-    flex: 1,
-    backgroundColor: "transparent",
-  },
-  headerFill: {
-    flex: 1,
-    backgroundColor: "#0f2a40",
-    borderBottomLeftRadius: 18,
-    borderBottomRightRadius: 18,
-    borderBottomWidth: 1,
-    borderColor: "#1c3a52",
-  },
-});

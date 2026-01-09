@@ -139,6 +139,14 @@ export function SignInScreen({ navigation }: Props) {
               <Text style={styles.helper}>{errors.password.message}</Text>
             )}
           </View>
+
+          <TouchableOpacity
+            onPress={() => navigation.navigate("ForgotPassword")}
+            activeOpacity={0.7}
+            style={styles.forgotPasswordButton}
+          >
+            <Text style={styles.forgotPasswordText}>Forgot password?</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Button Section */}
@@ -303,5 +311,14 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontSize: 14,
     textDecorationLine: "underline",
+  },
+  forgotPasswordButton: {
+    alignSelf: "flex-end",
+    marginTop: 8,
+  },
+  forgotPasswordText: {
+    color: "#2d8cff",
+    fontSize: 14,
+    fontWeight: "600",
   },
 });

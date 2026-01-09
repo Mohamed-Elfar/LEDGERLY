@@ -1,4 +1,5 @@
 export type Role = "ADMIN" | "STAFF";
+export type JoinRequestStatus = "PENDING" | "APPROVED" | "REJECTED";
 
 export interface Organization {
   id: string;
@@ -11,6 +12,19 @@ export interface UserProfile {
   org_name?: string;
   role: Role;
   username: string;
+  status?: "ACTIVE" | "PENDING" | "REJECTED";
+}
+
+export interface JoinRequest {
+  id: string;
+  user_id: string;
+  email: string;
+  username?: string;
+  org_id: string;
+  org_name?: string;
+  role?: Role;
+  status: JoinRequestStatus;
+  created_at?: string;
 }
 
 export interface Customer {

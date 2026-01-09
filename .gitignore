@@ -1,4 +1,10 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+# Ignore local environment files and secrets
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+build/# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
 # dependencies
 node_modules/

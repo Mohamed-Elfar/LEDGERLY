@@ -77,7 +77,9 @@ export function SignUpScreen({ navigation }: Props) {
           ? values.joinOrgId.trim().toLowerCase()
           : generateOrgId(values.orgName);
 
-      const orgName = isJoiningOrg ? values.joinOrgId : values.orgName.trim();
+      // When joining: keep the org ID, and let the auth service fetch the org name
+      // When creating: use the provided org name
+      const orgName = isJoiningOrg ? "" : values.orgName.trim();
 
       await signUp(
         values.email.trim(),
@@ -85,7 +87,8 @@ export function SignUpScreen({ navigation }: Props) {
         finalOrgId,
         orgName,
         values.username.trim(),
-        role
+        role,
+        isJoiningOrg
       );
       navigation.replace("ConfirmEmail", {
         email: values.email.trim(),
